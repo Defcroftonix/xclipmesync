@@ -3,6 +3,10 @@ import queue
 from Xlib import X, display as xdisplay
 from Xlib.protocol import event
 import uuid
+import sys
+import time
+import hashlib
+
 
 
 # Sink entity
@@ -163,4 +167,35 @@ def _set_primary(self, content: bytes):
             # Break out so the main loop can handle it
             break
 
+#hash function
+def content_hash(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
+#main
+def main():
+    displays = sys.argv[1:] if len(sys.argv) > 1 else [":0", ":1"]
+    
+    if len(displays) < 2:
+        print("Error: at least 2 displays required.")
+        sys.exit(1)
+    
+    print(f"Starting PRIMARY sync across: {', '.join(displays)}")
+    
+    # Create all sinks first so they can reference each other
+    sinks = []
+    for d in displays:
+        sink = Sink(d, sinks)
+        sinks.append(sink)
+    
+    # Start all sink threads
+    for sink in sinks:
+        sink.start()
+        print(f"Sink started for {sink.display_name}")
+    
+    try:
+        threading.Event().wait()
+    except KeyboardInterrupt:
+        print("Stopped.")
+
+if __name__ == "__main__":
+    main()
