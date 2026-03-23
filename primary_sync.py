@@ -31,7 +31,6 @@ class Sink(threading.Thread):
 
 
 
-
 def run(self):
     while True:
         # Check X11 events
@@ -51,3 +50,22 @@ def run(self):
             pass
         
         time.sleep(0.01)  # tiny sleep to avoid busy loop
+
+
+
+import uuid
+
+def _broadcast_request(self):
+    # Generate unique tag for this change event
+    tag = str(uuid.uuid4())
+    
+    request = {
+        "tag": tag,
+        "src": self.display_name,
+        "requester": self  # reference to self so src knows where to deliver
+    }
+    
+    # Send to all other sinks
+    for sink in self.sinks:
+        if sink is not self:
+            sink.inbox.put(request)
