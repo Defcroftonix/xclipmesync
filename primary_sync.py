@@ -2,6 +2,7 @@ import threading
 import queue
 from Xlib import X, display as xdisplay
 from Xlib.protocol import event
+import uuid
 
 class Sink(threading.Thread):
     def __init__(self, display_name: str, sinks: list):
@@ -53,7 +54,6 @@ def run(self):
 
 
 
-import uuid
 
 def _broadcast_request(self):
     # Generate unique tag for this change event
@@ -69,3 +69,37 @@ def _broadcast_request(self):
     for sink in self.sinks:
         if sink is not self:
             sink.inbox.put(request)
+
+
+
+def _handle_request(self, request: dict):
+    # Request the PRIMARY content from X11
+    self.window.convert_selection(
+        self.primary,
+        self.utf8,
+        self.primary,
+        X.CurrentTime
+    )
+    self.display.flush()
+    
+    # Wait for SelectionNotify — content is ready
+    while True:
+        ev = self.display.next_event()
+        if ev.type == X.SelectionNotify:
+            if ev.property == X.NONE:
+                return  # conversion failed, bail out
+            
+            # Read the content
+            prop = self.window.get_full_property(ev.property, X.AnyPropertyType)
+            if not prop:
+                return
+            
+            content = prop.value.tobytes()
+            
+            # Deliver back to requester with tag
+            request["requester"].deliver({
+                "tag": request["tag"],
+                "src": request["src"],
+                "content": content
+            })
+            return
