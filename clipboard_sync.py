@@ -4,7 +4,12 @@ import subprocess
 import time
 import sys
 
+
 DISPLAYS = sys.argv[1:] if len(sys.argv) > 1 else [":0", ":1"]
+if len(DISPLAYS) < 2:
+    print("Error: at least 2 displays required.")
+    sys.exit(1)
+
 POLL_INTERVAL = 0.5
 
 
