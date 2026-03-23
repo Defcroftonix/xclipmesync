@@ -3,7 +3,7 @@ Syncs clipboard across multiple X11 displays for a single user. Runs in the back
 
 ## How it works
 
-xclipmesync polls each display at a fixed interval using `xclip`. When it detects 
+xclipmesync polls each display at a fixed interval (currently set hardcoded to 0.5 seconds. If you want you can change it on the python code itself at the top) using `xclip`. When it detects 
 a change on one display, it hashes the content and propagates it to all other displays. 
 Then we just run a hash check prevents sync loops. So if the content came from xclipmesync itself, 
 it won't be re-propagated.
@@ -11,6 +11,8 @@ it won't be re-propagated.
 Unlike similar tools, xclipmesync uses a mesh topology — every display is treated 
 equally with no hardcoded primary display. This means any display can be the source 
 and any display can be the destination. It is very simple architecture really.
+
+Originally I want to make a sink to properly check and compare between displays but I thought it is too complicated and decided to use simpler approach. By simply just read the xclip and polling it without needing the sink approach. Because truthfully, I am lazy. This is the simplest approach I can think of that able to scale to multiple displays.
 
 
 ## Dependencies
@@ -115,6 +117,7 @@ journalctl --user -u clipboard-sync -f     # live logs
 - All displays are equal, no hardcoded primary display
 - Supports more than two displays
 - Hash-based loop prevention per display
+- I uses polling which might cause more waste of resource
 
 ## Multi-user support
 
