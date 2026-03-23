@@ -16,6 +16,12 @@ if ! command -v xclip &>/dev/null; then
     exit 1
 fi
 
+PYTHON=$(which python3 2>/dev/null)
+if [ -z "$PYTHON" ]; then
+    echo "Error: python3 is not installed."
+    exit 1
+fi
+
 # Need at least 2 displays
 if [ "$#" -lt 2 ]; then
     DISPLAYS=":0 :1"
