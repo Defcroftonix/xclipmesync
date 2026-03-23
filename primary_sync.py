@@ -17,6 +17,8 @@ class Sink(threading.Thread):
         self.sinks = sinks  # reference to all sinks including self
         self.inbox = queue.Queue()
         self.last_written = None
+        self._pending_request = None
+        self._held_content = None
         
         # X11 connection
         self.display = xdisplay.Display(display_name)
@@ -96,6 +98,26 @@ class Sink(threading.Thread):
         })
         self._pending_request = None
     
+    def _handle_selection_request(self, ev):
+        if ev.selection != self.primary or not self._held_content:
+            return
+        ev.requestor.change_property(
+            ev.property,
+            self.utf8,
+            8,
+            self._held_content
+        )
+        response = event.SelectionNotify(
+            time=ev.time,
+            requestor=ev.requestor,
+            selection=ev.selection,
+            target=ev.target,
+            property=ev.property
+        )
+        ev.requestor.send_event(response)
+        self.display.flush()
+    
+
     
     
     # What happen when it detect SelectionClear
@@ -115,38 +137,6 @@ class Sink(threading.Thread):
                 sink.inbox.put(request)
     
     
-    # when sink receive request from another sink
-    def _handle_request(self, request: dict):
-        # Request the PRIMARY content from X11
-        self.window.convert_selection(
-            self.primary,
-            self.utf8,
-            self.primary,
-            X.CurrentTime
-        )
-        self.display.flush()
-        
-        # Wait for SelectionNotify — content is ready
-        while True:
-            ev = self.display.next_event()
-            if ev.type == X.SelectionNotify:
-                if ev.property == X.NONE:
-                    return  # conversion failed, bail out
-                
-                # Read the content
-                prop = self.window.get_full_property(ev.property, X.AnyPropertyType)
-                if not prop:
-                    return
-                
-                content = prop.value.tobytes()
-                
-                # Deliver back to requester with tag
-                request["requester"].deliver({
-                    "tag": request["tag"],
-                    "src": request["src"],
-                    "content": content
-                })
-                return
     
     
     # When it finally arrive at the original sink that broadcast request
@@ -167,44 +157,10 @@ class Sink(threading.Thread):
     
     # This is for the PRIMARY ownetship handling
     def _set_primary(self, content: bytes):
-        # Acquire PRIMARY ownership
+        self._held_content = content
         self.window.set_selection_owner(self.primary, X.CurrentTime)
         self.display.flush()
-        
-        # Store content so we can serve it when someone requests a paste
-        self._held_content = content
-        
-        # Listen for SelectionRequest — someone wants to paste
-        while True:
-            ev = self.display.next_event()
-            
-            if ev.type == X.SelectionRequest:
-                # Someone is requesting our PRIMARY content
-                if ev.selection == self.primary:
-                    # Send the content back
-                    ev.requestor.change_property(
-                        ev.property,
-                        self.utf8,
-                        8,
-                        self._held_content
-                    )
-                    
-                    # Notify requestor that content is ready
-                    response = event.SelectionNotify(
-                        time=ev.time,
-                        requestor=ev.requestor,
-                        selection=ev.selection,
-                        target=ev.target,
-                        property=ev.property
-                    )
-                    ev.requestor.send_event(response)
-                    self.display.flush()
-            
-            elif ev.type == X.SelectionClear:
-                # We lost PRIMARY ownership, someone else highlighted something
-                # Break out so the main loop can handle it
-                break
-
+       
 #hash function
 def content_hash(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
