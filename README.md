@@ -8,7 +8,7 @@ a change on one display, it hashes the content and propagates it to all other di
 Then we just run a hash check prevents sync loops. So if the content came from xclipmesync itself, 
 it won't be re-propagated.
 
-Unlike similar tools, xclipmesync uses a mesh topology — every display is treated 
+Unlike similar tools, xclipmesync uses a mesh topology. So every display is treated 
 equally with no hardcoded primary display. This means any display can be the source 
 and any display can be the destination. It is very simple architecture really.
 
