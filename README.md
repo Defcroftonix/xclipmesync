@@ -115,9 +115,9 @@ journalctl --user -u clipboard-sync -f     # live logs
 
 - No tcl/tk required, only Python 3 and xclip
 - All displays are equal, no hardcoded primary display
-- Supports more than two displays
+- Supports as many display architecturally 
 - Hash-based loop prevention per display
-- I uses polling which might cause more waste of resource
+- I uses polling which might cause more waste of resource, some delay, and some racing condition.
 
 ## Multi-user support
 
