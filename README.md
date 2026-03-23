@@ -1,5 +1,17 @@
 # xclipmesync
-Syncs clipboard across multiple X11 displays for a single user. Runs in the background as daemon
+Syncs clipboard across multiple X11 displays for a single user. Runs in the background as daemon. By the way the name refer to x as in X11 display. Clip as in cliboard. Me as in this tool only works for single user. And sync describing its function as clipboard sync.
+
+## How it works
+
+xclipmesync polls each display at a fixed interval using `xclip`. When it detects 
+a change on one display, it hashes the content and propagates it to all other displays. 
+Then we just run a hash check prevents sync loops. So if the content came from xclipmesync itself, 
+it won't be re-propagated.
+
+Unlike similar tools, xclipmesync uses a mesh topology — every display is treated 
+equally with no hardcoded primary display. This means any display can be the source 
+and any display can be the destination. It is very simple architecture really.
+
 
 ## Dependencies
 
@@ -97,6 +109,12 @@ systemctl --user restart clipboard-sync    # restart after config changes
 systemctl --user stop clipboard-sync       # stop
 journalctl --user -u clipboard-sync -f     # live logs
 ```
+## Differences from xclipsync
+
+- No tcl/tk required, only Python 3 and xclip
+- All displays are equal, no hardcoded primary display
+- Supports more than two displays
+- Hash-based loop prevention per display
 
 ## Multi-user support
 
