@@ -30,6 +30,12 @@ By default it syncs `:0` and `:1`. To specify your own displays:
 ```bash
 ./setup.sh :0 :1 :2
 ```
+In case the display doesn't exist it will continue running and if you start that display later, it will automatically sync that one. Run `./setup.sh` again with specific display you want in case you want to change the display or just edit `~/.config/systemd/user/clipboard-sync.service` manually in case you need to with:
+
+
+```bash
+nano ~/.config/systemd/user/clipboard-sync.service
+```
 
 The setup script requires no `sudo` and only modifies your user systemd directory (`~/.config/systemd/user/`).
 
@@ -45,7 +51,7 @@ If you prefer not to use the setup script, you can do it yourself:
 Description=X11 clipboard sync
 
 [Service]
-ExecStart=/usr/bin/python3 /path/to/clipboard_sync.py
+ExecStart=/usr/bin/python3 /path/to/clipboard_sync.py :0 :1
 Restart=on-failure
 
 [Install]
@@ -53,6 +59,7 @@ WantedBy=default.target
 ```
 
 Make sure the path is correct.
+And make sure `:0 :1` is changed into what display server you want to sync. You can add as many you want but I haven't tested the limit. Edit this file `~/.config/systemd/user/clipboard-sync.service` if you want to change your display later on.
 
 In case you just clone this repo to your home folder, just use this instead:
 
