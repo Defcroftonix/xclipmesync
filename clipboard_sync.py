@@ -2,9 +2,10 @@
 import hashlib
 import subprocess
 import time
+import sys
 
-DISPLAYS = [":0", ":1"]
-POLL_INTERVAL = 0.3
+DISPLAYS = sys.argv[1:] if len(sys.argv) > 1 else [":0", ":1"]
+POLL_INTERVAL = 0.5
 
 
 def get_clipboard(display: str) -> bytes:
