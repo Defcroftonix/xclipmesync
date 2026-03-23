@@ -30,6 +30,7 @@ By default it syncs `:0` and `:1`. To specify your own displays:
 ```bash
 ./setup.sh :0 :1 :2
 ```
+Requires at least two displays specified
 In case the display doesn't exist it will continue running and if you start that display later, it will automatically sync that one. Run `./setup.sh` again with specific display you want in case you want to change the display or just edit `~/.config/systemd/user/clipboard-sync.service` manually in case you need to with:
 
 
@@ -59,7 +60,7 @@ WantedBy=default.target
 ```
 
 Make sure the path is correct.
-And make sure `:0 :1` is changed into what display server you want to sync. You can add as many you want but I haven't tested the limit. Edit this file `~/.config/systemd/user/clipboard-sync.service` if you want to change your display later on.
+And make sure `:0 :1` is changed into what display server you want to sync. Requires at least two displays specified. You can add as many you want but I haven't tested the limit. Edit this file `~/.config/systemd/user/clipboard-sync.service` if you want to change your display later on.
 
 In case you just clone this repo to your home folder, just use this instead:
 
