@@ -68,6 +68,8 @@ Restart=on-failure
 WantedBy=default.target
 ```
 
+You still need to edit your username into the file path.
+
 
 3. Enable and start it:
 
