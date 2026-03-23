@@ -83,7 +83,7 @@ In case you just clone this repo to your home folder, just use this instead:
 Description=X11 clipboard sync
 
 [Service]
-ExecStart=/usr/bin/python3 /home/yourusername/xclipmesync/clipboard_sync.py
+ExecStart=/usr/bin/python3 /home/yourusername/xclipmesync/clipboard_sync.py :0 :1
 Restart=on-failure
 
 [Install]
