@@ -1,5 +1,5 @@
 # xclipmesync
-Syncs clipboard across multiple X11 displays for a single user. Runs in the background as daemon. By the way the name refer to x as in X11 display. Clip as in cliboard. Me as in this tool only works for single user. And sync describing its function as clipboard sync. It currently only handles text and everything else is untested, it shouldn't work because 'xclip' only handles text
+Syncs clipboard across multiple X11 displays for a single user. Runs in the background as daemon. By the way the name refer to x as in X11 display. Clip as in cliboard. Me as in this tool only works for single user. And sync describing its function as clipboard sync. It currently only handles text and everything else is untested, it shouldn't work because 'xclip' only handles text. Also the clipboard_sync.py specifically only hanfle clipboard, not primary selection. I have a plan to add primary sync in the future though
 
 ## How it works
 
