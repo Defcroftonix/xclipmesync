@@ -39,24 +39,62 @@ class Sink(threading.Thread):
 
     # waiter for SelectionClear
     def run(self):
+        self._pending_request = None  # track if we're waiting for a SelectionNotify
+        
         while True:
-            # Check X11 events
             while self.display.pending_events():
                 ev = self.display.next_event()
                 
                 if ev.type == X.SelectionClear and ev.selection == self.primary:
-                    # Someone on our display just highlighted something
-                    # Broadcast a request to all other sinks
                     self._broadcast_request()
+                
+                elif ev.type == X.SelectionRequest:
+                    self._handle_selection_request(ev)
+                
+                elif ev.type == X.SelectionNotify:
+                    self._handle_selection_notify(ev)
             
-            # Check our inbox for incoming requests from other sinks
             try:
                 request = self.inbox.get_nowait()
-                self._handle_request(request)
+                self._start_request(request)  # renamed, no longer blocks
             except queue.Empty:
                 pass
             
-            time.sleep(0.01)  # tiny sleep to avoid busy loop
+            time.sleep(0.01)
+        
+    def _start_request(self, request: dict):
+        # Just fire the convert_selection and store the pending request
+        self._pending_request = request
+        self.window.convert_selection(
+            self.primary,
+            self.utf8,
+            self.primary,
+            X.CurrentTime
+        )
+        self.display.flush()
+
+
+
+
+    def _handle_selection_notify(self, ev):
+        if not self._pending_request:
+            return
+        if ev.property == X.NONE:
+            self._pending_request = None
+            return
+        
+        prop = self.window.get_full_property(ev.property, X.AnyPropertyType)
+        if not prop:
+            self._pending_request = None
+            return
+        
+        content = prop.value.tobytes()
+        self._pending_request["requester"].deliver({
+            "tag": self._pending_request["tag"],
+            "src": self._pending_request["src"],
+            "content": content
+        })
+        self._pending_request = None
     
     
     
